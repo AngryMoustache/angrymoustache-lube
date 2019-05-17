@@ -3,7 +3,6 @@
 namespace Lube\Models;
 
 use Lube\LubeObject;
-// use Lube\Database\Query;
 
 /**
  * Model that all other models extend
@@ -13,12 +12,27 @@ use Lube\LubeObject;
  */
 class Model extends LubeObject
 {
-    // use Query;
+    /**
+     * Do something before getting information from the database
+     *
+     * @param array $data The data to parse
+     *
+     * @return object
+     */
+    static function beforeFind($query): object
+    {
+        return $query;
+    }
 
     /**
-     * Fields to be excluded while selecting
+     * Do something after getting information from the database
      *
-     * @var array
+     * @param array $data The data to parse
+     *
+     * @return array
      */
-    static $excluded;
+    static function afterFind($data): array
+    {
+        return $data ?? [];
+    }
 }

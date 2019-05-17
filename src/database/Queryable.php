@@ -3,7 +3,6 @@
 namespace Lube\Database;
 
 use Lube\Debug;
-use Lube\LubeObject;
 
 /**
  * The Query trait for creating database calls, used on Model
@@ -11,7 +10,7 @@ use Lube\LubeObject;
  * @author Sander Van Damme <sander@codedor.be>
  * @since 22/03/2019
  */
-trait Query
+trait Queryable
 {
     /**
      * The data saved in the query
@@ -63,16 +62,16 @@ trait Query
      *
      * @return self
      */
-    static function where($conditions)
+    static function where($conditions, $is = null)
     {
-        foreach ($conditions as $key => $field) {
-            if (gettype($key) === 'string') {
-
+        if (is_array($conditions)) {
+            foreach ($conditions as $key => $field) {
+                if (array_search($field, self::$query['where']) === false) {
+                    self::$query['where'][$key] = $field;
+                }
             }
-
-            if (array_search($field, self::$query['where']) === false) {
-                self::$query['where'][] = $field;
-            }
+        } else {
+            self::$query['where'][$conditions] = $is;
         }
 
         return new static;
@@ -104,7 +103,9 @@ trait Query
     static function get()
     {
         // Build the SQL
+        self::beforeFind(new static);
         $query = self::$query;
+
         $sql = 'SELECT ';
 
         // Set the tablename if none is set yet
@@ -130,7 +131,16 @@ trait Query
 
         // WHERE
         if (!empty($query['where'])) {
-            $sql .= ' WHERE ' . join(' AND ', $query['where']);
+            $where = [];
+            foreach ($query['where'] as $key => $value) {
+                if (preg_match('/<(.*?)>/', $key)) {
+                    $where[] = $key . ' "' . $value . '"';
+                } else {
+                    $where[] = $key . ' = "' . $value . '"';
+                }
+            }
+
+            $sql .= ' WHERE ' . join(' AND ', $where);
         }
 
         // ORDER
@@ -138,7 +148,7 @@ trait Query
             $sql .= ' ORDER BY ' . join(', ', $query['order']);
         }
 
-        return Database::SQLselect($sql);
+        return self::afterFind(Database::SQLselect($sql));
     }
 
     /**
