@@ -31,9 +31,9 @@ class Router extends LubeObject
     /**
      * Get the current route
      *
-     * @return Route
+     * @return Route or array
      */
-    static public function getCurrentRoute() : Route
+    static public function getCurrentRoute()
     {
         $parameters = array();
 

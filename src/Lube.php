@@ -22,12 +22,15 @@ class Lube extends LubeObject
      */
     public function __construct()
     {
+        session_start();
+
         // Include files that must always be included
         $this->include('database.Database');
         $this->include('Debug');
         $this->include('controller.Controller');
         $this->include('routing.Router');
         $this->include('config.bootstrap');
+        $this->include('helpers');
 
         // Connect to the database
         Database::connect();
